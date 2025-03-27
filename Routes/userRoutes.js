@@ -27,6 +27,10 @@ router.post('/register', async (req, res) => {
 
     console.log("User before saving:", user); // Debugging line
     await user.save();
+
+    // Verify if the password is hashed before saving
+    console.log("User saved with hashed password:", user.password); // Debugging line
+
     res.status(201).json({ message: 'User registered successfully' });
   } catch (error) {
     console.error('Registration error:', error);
@@ -77,3 +81,5 @@ router.post('/login', async (req, res) => {
     return res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
+
+module.exports = router;
