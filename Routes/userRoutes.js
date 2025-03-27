@@ -18,16 +18,14 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ message: 'User already exists' });
     }
 
-    // Hash the password before saving
-    const hashedPassword = await bcrypt.hash(password, 10); // Hashing the password
-
     // Create a new user
     user = new User({
       name,
       email,
-      password: hashedPassword,  // Store the hashed password
+      password,
     });
 
+    console.log("User before saving:", user); // Debugging line
     await user.save();
     res.status(201).json({ message: 'User registered successfully' });
   } catch (error) {
@@ -45,16 +43,19 @@ router.post('/login', async (req, res) => {
   }
 
   try {
+    console.log("Attempting to find user with email:", email);
     const user = await User.findOne({ email });
 
     if (!user) {
+      console.log("User not found");
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    // Check if password matches the hash
+    // Check if the password matches
     const isMatch = await user.matchPassword(password);
 
     if (!isMatch) {
+      console.log("Password mismatch");
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
@@ -65,6 +66,7 @@ router.post('/login', async (req, res) => {
       { expiresIn: '1h' }
     );
 
+    console.log("Login successful. Token generated.");
     return res.json({
       message: 'Login successful',
       token,
@@ -75,5 +77,3 @@ router.post('/login', async (req, res) => {
     return res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
-
-module.exports = router;

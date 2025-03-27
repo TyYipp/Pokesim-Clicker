@@ -1,34 +1,52 @@
 const mongoose = require('mongoose');
-const bcrypt = require('bcryptjs');
+const bcrypt = require('bcryptjs');  // Ensure bcryptjs is installed
 
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: 'Please enter a name',
-    trim: true,
+    required: true,
   },
   email: {
     type: String,
-    required: 'Please enter an email',
+    required: true,
     unique: true,
     lowercase: true,
-    trim: true,
   },
   password: {
     type: String,
-    required: 'Please enter a password',
+    required: true,
   },
+  role: {
+    type: String,
+    default: 'user',
+  },
+  slug: {
+    type: String,
+    required: true,
+    unique: true,
+  },
+}, {
+  timestamps: true,
 });
 
-// Password hashing before saving
-userSchema.pre('save', async function (next) {
-  if (!this.isModified('password')) return next();
-  this.password = await bcrypt.hash(this.password, 10);
-  next();
+// Pre-save hook to hash password before saving
+userSchema.pre('save', async function(next) {
+  if (!this.isModified('password')) {
+    return next(); // Skip hashing if password is not modified
+  }
+
+  try {
+    // Hash the password with bcrypt
+    const salt = await bcrypt.genSalt(10);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+  } catch (error) {
+    next(error); // Pass error to next middleware
+  }
 });
 
-// Password matching method for login
-userSchema.methods.matchPassword = async function (enteredPassword) {
+// Method to compare password with hashed password in DB
+userSchema.methods.matchPassword = async function(enteredPassword) {
   return await bcrypt.compare(enteredPassword, this.password);
 };
 
