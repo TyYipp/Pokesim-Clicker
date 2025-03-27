@@ -2,7 +2,9 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
-const bcrypt = require('bcryptjs');
+const dotenv = require('dotenv');
+
+dotenv.config(); // Load environment variables
 
 // Register Route
 router.post('/register', async (req, res) => {
@@ -18,18 +20,20 @@ router.post('/register', async (req, res) => {
       return res.status(400).json({ message: 'User already exists' });
     }
 
+    // Ensure slug is generated
+    const slug = name.toLowerCase().replace(/\s+/g, '-') + '-' + Date.now();
+
     // Create a new user
     user = new User({
       name,
       email,
       password,
+      slug,  // Ensure slug is included
     });
 
-    console.log("User before saving:", user); // Debugging line
+    console.log('User before saving:', user);
     await user.save();
-
-    // Verify if the password is hashed before saving
-    console.log("User saved with hashed password:", user.password); // Debugging line
+    console.log('User after saving:', await User.findOne({ email }));
 
     res.status(201).json({ message: 'User registered successfully' });
   } catch (error) {
@@ -47,19 +51,22 @@ router.post('/login', async (req, res) => {
   }
 
   try {
-    console.log("Attempting to find user with email:", email);
-    const user = await User.findOne({ email });
+    console.log('Attempting to find user with email:', email);
+
+    // Find user and explicitly select the password field
+    const user = await User.findOne({ email }).select('+password');
 
     if (!user) {
-      console.log("User not found");
+      console.log('User not found');
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
-    // Check if the password matches
+    // Check if the password matches using matchPassword
     const isMatch = await user.matchPassword(password);
+    console.log('Password match result:', isMatch);
 
     if (!isMatch) {
-      console.log("Password mismatch");
+      console.log('Password mismatch');
       return res.status(400).json({ message: 'Invalid credentials' });
     }
 
@@ -70,7 +77,7 @@ router.post('/login', async (req, res) => {
       { expiresIn: '1h' }
     );
 
-    console.log("Login successful. Token generated.");
+    console.log('Login successful. Token generated.');
     return res.json({
       message: 'Login successful',
       token,
