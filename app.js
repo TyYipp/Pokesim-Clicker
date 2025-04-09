@@ -2,9 +2,8 @@ const express = require('express');
 const mongoose = require('mongoose');
 const dotenv = require('dotenv');
 const cors = require('cors');
-const userRoutes = require('./routes/userRoutes');
-const pokemonRoutes = require('./routes/pokemonRoutes'); // Include Pokémon routes
 const upload = require('./middleware/upload'); // Import the upload middleware
+const Image = require('./models/Image'); // Import the Image model
 
 dotenv.config();
 
@@ -19,19 +18,31 @@ mongoose.connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB connected"))
   .catch((err) => console.log("❌ MongoDB connection error:", err));
 
-// Routes
-app.use("/users", userRoutes);
-app.use("/pokemon", pokemonRoutes); // Pokémon route
-
-// File Upload Route (add this new route)
-app.post("/upload", upload.single("file"), (req, res) => {
+// File Upload Route
+app.post("/upload", upload.single("file"), async (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: "No file uploaded." });
   }
-  res.json({
-    message: "File uploaded successfully!",
-    filename: req.file.filename
-  });
+
+  try {
+    // Upload the file to Cloudinary using the Image model's method
+    const result = await Image.uploadToCloudinary(req.file.buffer);
+
+    // Save image info (URL and public ID) to the database
+    const newImage = new Image({
+      url: result.secure_url,  // Cloudinary URL
+      public_id: result.public_id,  // Cloudinary public ID
+    });
+    await newImage.save();
+
+    // Respond with success and image URL
+    res.json({
+      message: "File uploaded successfully!",
+      url: result.secure_url,
+    });
+  } catch (err) {
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // Server
