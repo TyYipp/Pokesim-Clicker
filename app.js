@@ -5,12 +5,13 @@ const dotenv = require("dotenv");
 const cors = require("cors");
 const swaggerJsDoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
+const exphbs = require("express-handlebars");
 
 // 🧩 Local modules
-const upload = require("./middleware/upload"); // File upload middleware
-const Image = require("./models/Image"); // Mongoose Image model
-const userRoutes = require("./Routes/userRoutes"); // ✅ User routes
-const pokemonRoutes = require("./Routes/pokemonRoutes"); // ✅ Pokémon routes
+const upload = require("./middleware/upload");
+const Image = require("./models/Image");
+const userRoutes = require("./Routes/userRoutes");
+const pokemonRoutes = require("./Routes/pokemonRoutes");
 
 // 📦 Load environment variables
 dotenv.config();
@@ -24,7 +25,7 @@ const swaggerOptions = {
     openapi: "3.0.0",
     info: {
       title: "College Now API",
-      version: "0.7", // ✅ Fixed semver
+      version: "0.7",
       description: "My teacher made me do this",
     },
     servers: [
@@ -33,7 +34,7 @@ const swaggerOptions = {
       },
     ],
   },
-  apis: ["./app.js", "./routes/*.js"], // ✅ Match all route files
+  apis: ["./app.js", "./routes/*.js"],
 };
 
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
@@ -75,7 +76,30 @@ app.post("/upload", upload.single("file"), async (req, res) => {
 
 // ✅ Routes
 app.use("/users", userRoutes);
-app.use("/pokemon", pokemonRoutes); // ✅ Added Pokémon routes
+app.use("/pokemon", pokemonRoutes);
+
+// 🎨 View engine setup for Handlebars
+app.engine("handlebars", exphbs.engine({
+  defaultLayout: 'main', // Use the 'main' layout by default
+}));
+app.set("view engine", "handlebars");
+app.set("views", "./views");
+
+// 🍓 Sample Handlebars route
+app.get("/", (req, res) => {
+  const fruits = [
+    { name: "Apple", favorite: false },
+    { name: "Banana", favorite: false },
+    { name: "Cherry", favorite: false },
+    { name: "Durian", favorite: true },
+  ];
+  res.render("fruit", { fruits });
+});
+
+// 🚀 New test route
+app.get('/test', (req, res) => {
+  res.render('test'); // Render the test.handlebars view
+});
 
 // 🚀 Start server
 const PORT = process.env.PORT || 3000;

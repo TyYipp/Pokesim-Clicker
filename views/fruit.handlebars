@@ -1,0 +1,8 @@
+<h1>My Fruits</h1>
+<ul>
+  {{#each fruits}}
+    <li class="{{#if favorite}}favorite{{else}}not-favorite{{/if}}">
+      {{name}}
+    </li>
+  {{/each}}
+</ul>
