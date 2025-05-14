@@ -1,60 +1,67 @@
 const Pokemon = require("../models/Pokemon");
 
-// Get Pokémon with pagination & optional search
+// Get all Pokémon
 exports.getPokemon = async (req, res) => {
-    const page = parseInt(req.query.p) || 1;
-    const limit = 1; // Pokémon per page
-    const search = req.query.name || ''; 
-
-    try {
-        const query = search ? { name: new RegExp(search, 'i') } : {}; // Case-insensitive search
-        const total = await Pokemon.countDocuments(query);
-        const pokemonList = await Pokemon.find(query)
-            .sort({ name: 1 })
-            .skip(limit * (page - 1))
-            .limit(limit);
-
-        res.json({
-            total,
-            page,
-            totalPages: Math.ceil(total / limit),
-            pokemon: pokemonList
-        });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
-    }
+  console.log("Getting all Pokémon..."); // Debugging log
+  try {
+    const pokemon = await Pokemon.find();
+    res.json(pokemon);
+  } catch (err) {
+    res.status(500).json({ error: "Unable to fetch Pokémon" });
+  }
 };
 
 // Add a new Pokémon
 exports.addPokemon = async (req, res) => {
-    try {
-        const { name, multiplier, image } = req.body;
-        const newPokemon = new Pokemon({ name, multiplier, image });
-        await newPokemon.save();
-        res.status(201).json(newPokemon);
-    } catch (error) {
-        res.status(400).json({ error: error.message });
-    }
+  console.log("Adding new Pokémon..."); // Debugging log
+  try {
+    const { name, multiplier, image } = req.body;
+    const newPokemon = new Pokemon({ name, multiplier, image });
+    await newPokemon.save();
+    res.status(201).json(newPokemon);
+  } catch (err) {
+    res.status(500).json({ error: "Unable to add Pokémon" });
+  }
 };
 
-// Get a single Pokémon by ID
+// Get Pokémon by ID
 exports.getPokemonById = async (req, res) => {
-    try {
-        const pokemon = await Pokemon.findById(req.params.id);
-        if (!pokemon) return res.status(404).json({ message: "Pokémon not found" });
-        res.json(pokemon);
-    } catch (error) {
-        res.status(500).json({ error: error.message });
+  console.log("Getting Pokémon by ID..."); // Debugging log
+  try {
+    const pokemon = await Pokemon.findById(req.params.id);
+    if (!pokemon) {
+      return res.status(404).json({ error: "Pokémon not found" });
     }
+    res.json(pokemon);
+  } catch (err) {
+    res.status(500).json({ error: "Unable to fetch Pokémon by ID" });
+  }
 };
 
-// Delete a Pokémon by ID
-exports.deletePokemon = async (req, res) => {
-    try {
-        const deletedPokemon = await Pokemon.findByIdAndDelete(req.params.id);
-        if (!deletedPokemon) return res.status(404).json({ message: "Pokémon not found" });
-        res.json({ message: "Pokémon deleted successfully" });
-    } catch (error) {
-        res.status(500).json({ error: error.message });
+// Update Pokémon by ID
+exports.updatePokemon = async (req, res) => {
+  console.log("Updating Pokémon..."); // Debugging log
+  try {
+    const pokemon = await Pokemon.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    if (!pokemon) {
+      return res.status(404).json({ error: "Pokémon not found" });
     }
+    res.json(pokemon);
+  } catch (err) {
+    res.status(500).json({ error: "Unable to update Pokémon" });
+  }
+};
+
+// Delete Pokémon by ID
+exports.deletePokemon = async (req, res) => {
+  console.log("Deleting Pokémon..."); // Debugging log
+  try {
+    const pokemon = await Pokemon.findByIdAndDelete(req.params.id);
+    if (!pokemon) {
+      return res.status(404).json({ error: "Pokémon not found" });
+    }
+    res.json({ message: "Pokémon deleted successfully" });
+  } catch (err) {
+    res.status(500).json({ error: "Unable to delete Pokémon" });
+  }
 };

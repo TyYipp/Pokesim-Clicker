@@ -2,9 +2,19 @@ const express = require("express");
 const router = express.Router();
 const pokemonController = require("../controllers/pokemonController");
 
-router.get("/", pokemonController.getPokemon); // Get all Pokémon (paginated)
-router.post("/", pokemonController.addPokemon); // Add new Pokémon
-router.get("/:id", pokemonController.getPokemonById); // Get single Pokémon by ID
-router.delete("/:id", pokemonController.deletePokemon); // Delete Pokémon
+// Get all Pokémon
+router.get("/", pokemonController.getPokemon);
+
+// Add a new Pokémon
+router.post("/", pokemonController.addPokemon);
+
+// Get a Pokémon by ID
+router.get("/:id", pokemonController.getPokemonById);
+
+// Update a Pokémon by ID
+router.put("/:id", pokemonController.updatePokemon);
+
+// Delete a Pokémon by ID
+router.delete("/:id", pokemonController.deletePokemon);
 
 module.exports = router;

@@ -10,8 +10,9 @@ const exphbs = require("express-handlebars");
 // 🧩 Local modules
 const upload = require("./middleware/upload");
 const Image = require("./models/Image");
-const userRoutes = require("./Routes/userRoutes");
-const pokemonRoutes = require("./Routes/pokemonRoutes");
+const userRoutes = require("./routes/userRoutes");
+const pokemonRoutes = require("./routes/pokemonRoutes");
+const adminRoutes = require("./routes/adminRoutes"); // Import admin routes
 
 // 📦 Load environment variables
 dotenv.config();
@@ -57,6 +58,7 @@ app.post("/upload", upload.single("file"), async (req, res) => {
   }
 
   try {
+    // Placeholder for Image.uploadToCloudinary, ensure you have this method in your Image model
     const result = await Image.uploadToCloudinary(req.file.buffer);
 
     const newImage = new Image({
@@ -74,9 +76,15 @@ app.post("/upload", upload.single("file"), async (req, res) => {
   }
 });
 
+// 🎨 Render register view
+app.get("/register", (req, res) => {
+  res.render("register"); // Render register.handlebars
+});
+
 // ✅ Routes
 app.use("/users", userRoutes);
 app.use("/pokemon", pokemonRoutes);
+app.use("/admin", adminRoutes); // Register the admin routes
 
 // 🎨 View engine setup for Handlebars
 app.engine("handlebars", exphbs.engine({
@@ -85,15 +93,9 @@ app.engine("handlebars", exphbs.engine({
 app.set("view engine", "handlebars");
 app.set("views", "./views");
 
-// 🍓 Sample Handlebars route
+// 🍓 Sample Handlebars route (For login)
 app.get("/", (req, res) => {
-  const fruits = [
-    { name: "Apple", favorite: false },
-    { name: "Banana", favorite: false },
-    { name: "Cherry", favorite: false },
-    { name: "Durian", favorite: true },
-  ];
-  res.render("fruit", { fruits });
+  res.render("login");
 });
 
 // 🚀 New test route
@@ -101,8 +103,17 @@ app.get('/test', (req, res) => {
   res.render('test'); // Render the test.handlebars view
 });
 
+// 🌍 Global error handling middleware (catch all errors)
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).json({ error: 'Something went wrong!' });
+});
+
 // 🚀 Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`http://localhost:3000`);
 });
+
+module.exports = app; // Export app for testing

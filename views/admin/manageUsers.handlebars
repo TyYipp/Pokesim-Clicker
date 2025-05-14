@@ -1,0 +1,22 @@
+<h1>Manage Users</h1>
+<table>
+  <thead>
+    <tr>
+      <th>Username</th>
+      <th>Email</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    {{#each users}}
+      <tr>
+        <td>{{this.username}}</td>
+        <td>{{this.email}}</td>
+        <td>
+          <a href="/admin/users/edit/{{this._id}}">Edit</a>
+          <a href="/admin/users/delete/{{this._id}}">Delete</a>
+        </td>
+      </tr>
+    {{/each}}
+  </tbody>
+</table>
