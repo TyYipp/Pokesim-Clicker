@@ -98,6 +98,17 @@ app.get("/register", (req, res) => res.render("register"));
 app.get("/login", (req, res) => res.render("login"));
 app.get("/clicker", (req, res) => res.render("clicker"));
 
+// Logout route - clears the token cookie
+app.post('/logout', (req, res) => {
+  res.clearCookie('token', {
+    httpOnly: true,
+    secure: process.env.NODE_ENV === 'production',
+    sameSite: 'lax',
+    path: '/',
+  });
+  res.json({ message: 'Logged out successfully' });
+});
+
 // Routes
 app.use("/users", userRoutes);
 app.use("/pokemon", pokemonRoutes);
