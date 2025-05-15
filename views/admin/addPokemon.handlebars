@@ -1,10 +1,16 @@
 <h1>Add New Pokémon</h1>
 
-<form action="/pokemon" method="POST">
-  <label>Name: <input type="text" name="name" required></label><br>
-  <label>Multiplier: <input type="number" step="0.01" name="multiplier" required></label><br>
-  <label>Image URL: <input type="text" name="image" required></label><br>
+<form action="/pokemon/add" method="POST">
+  <label for="name">Name:</label>
+  <input type="text" id="name" name="name" required>
+
+  <label for="multiplier">Multiplier:</label>
+  <input type="number" id="multiplier" step="0.01" name="multiplier" required>
+
+  <label for="image">Image URL:</label>
+  <input type="text" id="image" name="image" required>
+
   <button type="submit">Add Pokémon</button>
 </form>
 
-<a href="/pokemon">Back</a>
+<a href="/pokemon">Back to list</a>
