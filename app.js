@@ -13,6 +13,7 @@ const userRoutes = require("./routes/userRoutes");
 const pokemonRoutes = require("./routes/pokemonRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const loginRoute = require("./routes/loginRoutes");
+const editUserRoutes = require("./routes/editUser");  // Import your editUser.js routes
 
 dotenv.config();
 
@@ -86,6 +87,9 @@ app.use("/users", userRoutes);
 app.use("/pokemon", pokemonRoutes);
 app.use("/admin", adminRoutes);
 app.use("/auth", loginRoute);
+
+// Integrate editUser.js routes
+app.use("/admin", editUserRoutes);  // Mount your editUser routes under '/admin'
 
 // 404 handler
 app.use((req, res, next) => {
