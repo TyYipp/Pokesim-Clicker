@@ -1,14 +1,12 @@
-// 🌐 Core dependencies
 const express = require("express");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
-const cookieParser = require("cookie-parser");  // <--- add this
+const cookieParser = require("cookie-parser");
 const swaggerJsDoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
 const exphbs = require("express-handlebars");
 
-// 🧩 Local modules
 const upload = require("./middleware/upload");
 const Image = require("./models/Image");
 const userRoutes = require("./routes/userRoutes");
@@ -16,13 +14,10 @@ const pokemonRoutes = require("./routes/pokemonRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const loginRoute = require("./routes/loginRoutes");
 
-// 📦 Load environment variables
 dotenv.config();
 
-// 🚀 Initialize app before using it
 const app = express();
 
-// 📘 Swagger configuration
 const swaggerOptions = {
   swaggerDefinition: {
     openapi: "3.0.0",
@@ -31,11 +26,7 @@ const swaggerOptions = {
       version: "0.7",
       description: "My teacher made me do this",
     },
-    servers: [
-      {
-        url: "http://localhost:3000",
-      },
-    ],
+    servers: [{ url: "http://localhost:3000" }],
   },
   apis: ["./app.js", "./routes/*.js"],
 };
@@ -43,43 +34,35 @@ const swaggerOptions = {
 const swaggerDocs = swaggerJsDoc(swaggerOptions);
 app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
-// 🛡️ Middleware
+// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors());
-app.use(cookieParser());  // <--- add this to parse cookies
+app.use(cors({ origin: true, credentials: true }));  // Allow cookies cross-origin if needed
+app.use(cookieParser());
 
-// 🔗 Connect to MongoDB
+// Connect to MongoDB
 mongoose
   .connect(process.env.MONGO_URI)
   .then(() => console.log("✅ MongoDB connected"))
   .catch((err) => console.log("❌ MongoDB connection error:", err));
 
-// 📤 File upload route
+// File upload route
 app.post("/upload", upload.single("file"), async (req, res) => {
-  if (!req.file) {
-    return res.status(400).json({ error: "No file uploaded." });
-  }
-
+  if (!req.file) return res.status(400).json({ error: "No file uploaded." });
   try {
     const result = await Image.uploadToCloudinary(req.file.buffer);
-
     const newImage = new Image({
       url: result.secure_url,
       public_id: result.public_id,
     });
     await newImage.save();
-
-    res.json({
-      message: "File uploaded successfully!",
-      url: result.secure_url,
-    });
+    res.json({ message: "File uploaded successfully!", url: result.secure_url });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// 🎨 View engine setup for Handlebars
+// Handlebars setup
 app.engine(
   "handlebars",
   exphbs.engine({
@@ -89,38 +72,29 @@ app.engine(
 app.set("view engine", "handlebars");
 app.set("views", "./views");
 
-// 🎨 Render main views
-app.get("/", (req, res) => {
-  res.render("home");
-});
-app.get("/register", (req, res) => {
-  res.render("register");
-});
-app.get("/login", (req, res) => {
-  res.render("login");
-});
-app.get("/clicker", (req, res) => {
-  res.render("clicker");
-});
+// Render main views
+app.get("/", (req, res) => res.render("home"));
+app.get("/register", (req, res) => res.render("register"));
+app.get("/login", (req, res) => res.render("login"));
+app.get("/clicker", (req, res) => res.render("clicker"));
 
-// ✅ Routes
+// Routes
 app.use("/users", userRoutes);
 app.use("/pokemon", pokemonRoutes);
 app.use("/admin", adminRoutes);
 app.use("/auth", loginRoute);
 
-// 404 Handler for unknown routes
+// 404 handler
 app.use((req, res, next) => {
   res.status(404).json({ error: "Route not found" });
 });
 
-// 🌍 Global error handling middleware (catch all errors)
+// Global error handler
 app.use((err, req, res, next) => {
   console.error(err.stack);
   res.status(500).json({ error: "Something went wrong!" });
 });
 
-// 🚀 Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);

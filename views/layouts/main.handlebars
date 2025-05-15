@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
+  <meta charset="UTF-8" />
   <title>{{title}}</title>
   <style>
     .favorite {
@@ -19,6 +19,7 @@
       text-decoration: none;
       border-radius: 4px;
       margin-right: 20px; /* Space between buttons */
+      cursor: pointer;
     }
     .button:hover {
       background-color: #45a049;
@@ -30,33 +31,29 @@
   <!-- Universal buttons -->
   <a href="/" class="button">🏠 Home</a>
   <a href="/clicker" class="button">☝️ Clicker</a>
-  <a onclick="goToAdmin()" class="button"> Admin</a>
+  <a onclick="goToAdmin()" class="button">Admin</a>
+
   <!-- Render dynamic content from specific views -->
   {{{body}}}
 
 <script>
   async function goToAdmin() {
-    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch('/admin', {
+        credentials: 'include'  // IMPORTANT: send cookies with the request
+      });
 
-    if (!token) {
-      alert('You must be logged in.');
-      return;
-    }
-
-    const res = await fetch('/admin', {
-      headers: {
-        'Authorization': `Bearer ${token}`
+      if (res.ok) {
+        const html = await res.text();
+        document.open();
+        document.write(html);
+        document.close();
+      } else {
+        const data = await res.json();
+        alert(data.message || 'Access denied.');
       }
-    });
-
-    if (res.ok) {
-      const html = await res.text();
-      document.open();
-      document.write(html);
-      document.close();
-    } else {
-      const data = await res.json();
-      alert(data.message || 'Access denied.');
+    } catch (error) {
+      alert('Error: ' + error.message);
     }
   }
 </script>

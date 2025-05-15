@@ -5,8 +5,14 @@ dotenv.config();
 
 const isAuthenticated = async (req, res, next) => {
   try {
-    const authHeader = req.headers.authorization || req.cookies.token; // allow cookie or header
-    const token = authHeader && authHeader.split ? authHeader.split(' ')[1] : authHeader;
+    const authHeader = req.headers.authorization;
+    let token = null;
+
+    if (authHeader && authHeader.startsWith('Bearer ')) {
+      token = authHeader.split(' ')[1];
+    } else if (req.cookies && req.cookies.token) {
+      token = req.cookies.token;
+    }
 
     if (!token) {
       return res.status(401).json({ message: 'No token provided' });
@@ -19,7 +25,7 @@ const isAuthenticated = async (req, res, next) => {
       return res.status(401).json({ message: 'User not found' });
     }
 
-    req.user = user; // attach full user document (without password)
+    req.user = user; // Attach user info to request
     next();
   } catch (error) {
     return res.status(401).json({ message: 'Unauthorized', error: error.message });
