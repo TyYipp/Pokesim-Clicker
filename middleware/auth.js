@@ -1,3 +1,4 @@
+// middleware/auth.js
 const jwt = require('jsonwebtoken');
 const mongoose = require('mongoose');
 const User = require('../models/User');
@@ -54,6 +55,7 @@ const isAuthenticated = async (req, res, next) => {
 };
 
 const isAdmin = (req, res, next) => {
+  console.log('User info in isAdmin:', req.user);
   if (!req.user) {
     return res.status(401).json({ message: 'Unauthorized: No user found' });
   }

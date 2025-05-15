@@ -2,12 +2,16 @@ const User = require('../models/User');
 const Pokemon = require('../models/Pokemon');
 
 exports.dashboard = (req, res) => {
-  // Convert ObjectId to string for handlebars
+  if (!req.user) {
+    return res.status(401).json({ message: 'Unauthorized: No user info' });
+  }
+
+  // Defensive: check userId and username presence
   const user = {
-    _id: req.user._id.toString(),
-    name: req.user.name,
-    role: req.user.role,
-    email: req.user.email,
+    _id: req.user.userId ? req.user.userId.toString() : null,
+    name: req.user.username || '',
+    role: req.user.role || '',
+    email: req.user.email || '',
   };
 
   res.render('admin/dashboard', { user });
