@@ -24,6 +24,12 @@
     .button:hover {
       background-color: #45a049;
     }
+    /* User greeting and logout container */
+    .user-info {
+      display: inline-block;
+      margin-left: 20px;
+      font-weight: bold;
+    }
   </style>
 </head>
 <body>
@@ -33,6 +39,14 @@
   <a href="/clicker" class="button">☝️ Clicker</a>
   <a onclick="goToAdmin()" class="button">Admin</a>
 
+  <!-- User greeting and logout -->
+  {{#if user}}
+    <span class="user-info">
+      Hello, {{user.name}}!
+      <button class="button" onclick="logout()">Logout</button>
+    </span>
+  {{/if}}
+
   <!-- Render dynamic content from specific views -->
   {{{body}}}
 
@@ -40,7 +54,7 @@
   async function goToAdmin() {
     try {
       const res = await fetch('/admin', {
-        credentials: 'include'  // IMPORTANT: send cookies with the request
+        credentials: 'include'  // send cookies with the request
       });
 
       if (res.ok) {
@@ -51,6 +65,23 @@
       } else {
         const data = await res.json();
         alert(data.message || 'Access denied.');
+      }
+    } catch (error) {
+      alert('Error: ' + error.message);
+    }
+  }
+
+  async function logout() {
+    try {
+      const res = await fetch('/logout', {
+        method: 'POST',
+        credentials: 'include'
+      });
+      if (res.ok) {
+        window.location.href = '/';  // reload to update UI
+      } else {
+        const data = await res.json();
+        alert(data.message || 'Logout failed');
       }
     } catch (error) {
       alert('Error: ' + error.message);

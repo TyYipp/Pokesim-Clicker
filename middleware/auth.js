@@ -1,6 +1,4 @@
-// middleware/auth.js
 const jwt = require('jsonwebtoken');
-const mongoose = require('mongoose');
 const User = require('../models/User');
 const dotenv = require('dotenv');
 dotenv.config();
@@ -21,28 +19,26 @@ const isAuthenticated = async (req, res, next) => {
     console.log('Extracted Token:', token);
 
     if (!token) {
-      return res.status(401).json({ message: 'No token provided' });
+      // No token found - set user null and continue so public routes work
+      req.user = null;
+      return next();
     }
 
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     console.log('Decoded Token Payload:', decoded);
 
-    console.log('Finding user with ID:', decoded.userId);
-
-    const user = await User.findById(new mongoose.Types.ObjectId(decoded.userId))
+    const user = await User.findById(decoded.userId)
       .select('-password')
       .populate('ownedPokemons');
 
-    console.log('User found:', user);
-
     if (!user) {
+      // User not found - unauthorized
       return res.status(401).json({ message: 'User not found' });
     }
 
-    // Assign only required info to req.user
     req.user = {
       userId: user._id.toString(),
-      username: user.name,
+      name: user.name,      // use `name` here for consistency
       role: user.role,
       ownedPokemons: user.ownedPokemons,
     };
@@ -50,7 +46,11 @@ const isAuthenticated = async (req, res, next) => {
     next();
   } catch (error) {
     console.error('Authentication error:', error);
-    return res.status(401).json({ message: 'Unauthorized', error: error.message });
+    // For invalid token, just clear user and continue (optional)
+    req.user = null;
+    // Optionally, you can block access on invalid token by uncommenting:
+    // return res.status(401).json({ message: 'Unauthorized', error: error.message });
+    next();
   }
 };
 

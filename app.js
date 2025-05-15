@@ -16,6 +16,8 @@ const loginRoute = require("./routes/loginRoutes");
 const editUserRoutes = require("./routes/editUser");
 const editPokemonRoutes = require("./routes/editPokemon");
 
+const { isAuthenticated } = require("./middleware/auth"); // Import your auth middleware
+
 dotenv.config();
 
 const app = express();
@@ -72,11 +74,29 @@ app.engine(
 app.set("view engine", "handlebars");
 app.set("views", "./views");
 
+// ===== AUTH MIDDLEWARE SETUP =====
+// Call isAuthenticated for every request to decode token & set req.user if logged in
+app.use(async (req, res, next) => {
+  try {
+    await isAuthenticated(req, res, () => {});
+  } catch (err) {
+    // Ignore errors here; handled inside isAuthenticated
+  }
+  next();
+});
+
+// Make req.user available as user in all views/templates
+app.use((req, res, next) => {
+  res.locals.user = req.user || null;
+  next();
+});
+// ===== END AUTH SETUP =====
+
 // Render main views
 app.get("/", (req, res) => res.render("home"));
 app.get("/register", (req, res) => res.render("register"));
 app.get("/login", (req, res) => res.render("login"));
-app.get("/clicker", (req, res) => res.render("clicker")); // <-- Added clicker route here
+app.get("/clicker", (req, res) => res.render("clicker"));
 
 // Routes
 app.use("/users", userRoutes);
