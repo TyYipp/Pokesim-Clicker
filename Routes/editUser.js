@@ -1,54 +1,44 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const User = require('../models/User');  // Adjust the path to your User model
+const User = require("../models/User");
 
-// Route to display the edit user form
-router.get('/users/:id/edit', async (req, res) => {
-  const userId = req.params.id;
-
+// Edit User Route (GET to display form)
+router.get("/users/:id/edit", async (req, res) => {
+  const { id } = req.params;
   try {
-    const user = await User.findById(userId);  // Find the user by their ID
+    const user = await User.findById(id);
     if (!user) {
-      return res.status(404).send('User not found');
+      return res.status(404).json({ error: "User not found!" });
     }
-    res.render('editUser', { user: user });  // Render the editUser template
+    // Render the view from the correct path (admin folder)
+    res.render("admin/editUser", { user });
   } catch (err) {
-    res.status(500).send('Error fetching user: ' + err.message);
+    console.error("Error fetching user:", err);
+    res.status(500).json({ error: "Something went wrong!" });
   }
 });
 
-// Route to handle updating user data
-router.post('/users/:id/update', async (req, res) => {
-  const userId = req.params.id;
-  const { name, email } = req.body;
+// Update User Route (POST to handle form submission)
+router.post("/users/:id/edit", async (req, res) => {
+  const { id } = req.params;
+  const { name, email, role } = req.body;
 
   try {
-    const user = await User.findByIdAndUpdate(
-      userId,
-      { name, email },
-      { new: true }  // Return the updated user object
+    const updatedUser = await User.findByIdAndUpdate(
+      id,
+      { name, email, role },
+      { new: true, runValidators: true }
     );
-    if (!user) {
-      return res.status(404).send('User not found');
-    }
-    res.redirect('/admin/manage-users');  // Redirect to manage users after update
-  } catch (err) {
-    res.status(500).send('Error updating user: ' + err.message);
-  }
-});
 
-// Route to handle user deletion
-router.post('/users/:id/delete', async (req, res) => {
-  const userId = req.params.id;
-
-  try {
-    const result = await User.deleteOne({ _id: userId });
-    if (result.deletedCount === 0) {
-      return res.status(404).send('User not found');
+    if (!updatedUser) {
+      return res.status(404).json({ error: "User not found!" });
     }
-    res.redirect('/admin/manage-users');  // Redirect to manage users after deletion
+
+    // Redirect to the user management page after successful update
+    res.redirect("/admin/manage-users");
   } catch (err) {
-    res.status(500).send('Error deleting user: ' + err.message);
+    console.error("Error updating user:", err);
+    res.status(500).json({ error: "Something went wrong!" });
   }
 });
 
