@@ -62,11 +62,14 @@ app.post("/upload", upload.single("file"), async (req, res) => {
   }
 });
 
-// Handlebars setup
+// Handlebars setup with prototype access disabled
 app.engine(
   "handlebars",
   exphbs.engine({
     defaultLayout: "main",
+    runtimeOptions: {
+      allowProtoPropertiesByDefault: true, // Disable prototype property check
+    },
   })
 );
 app.set("view engine", "handlebars");
