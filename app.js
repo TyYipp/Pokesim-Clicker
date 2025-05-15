@@ -10,10 +10,11 @@ const exphbs = require("express-handlebars");
 const upload = require("./middleware/upload");
 const Image = require("./models/Image");
 const userRoutes = require("./routes/userRoutes");
-const pokemonRoutes = require("./routes/pokemonRoutes");
+const pokemonRoutes = require("./routes/pokemonRoutes");       // Your normal pokemon API routes (get, add, delete etc.)
 const adminRoutes = require("./routes/adminRoutes");
 const loginRoute = require("./routes/loginRoutes");
-const editUserRoutes = require("./routes/editUser");  // Import your editUser.js routes
+const editUserRoutes = require("./routes/editUser");            // Edit User routes
+const editPokemonRoutes = require("./routes/editPokemon");      // Edit Pokemon routes (GET edit form, POST update, POST delete)
 
 dotenv.config();
 
@@ -38,7 +39,7 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 // Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cors({ origin: true, credentials: true }));  // Allow cookies cross-origin if needed
+app.use(cors({ origin: true, credentials: true }));
 app.use(cookieParser());
 
 // Connect to MongoDB
@@ -63,13 +64,13 @@ app.post("/upload", upload.single("file"), async (req, res) => {
   }
 });
 
-// Handlebars setup with prototype access disabled
+// Handlebars setup with prototype access enabled
 app.engine(
   "handlebars",
   exphbs.engine({
     defaultLayout: "main",
     runtimeOptions: {
-      allowProtoPropertiesByDefault: true, // Disable prototype property check
+      allowProtoPropertiesByDefault: true,
     },
   })
 );
@@ -84,12 +85,13 @@ app.get("/clicker", (req, res) => res.render("clicker"));
 
 // Routes
 app.use("/users", userRoutes);
-app.use("/pokemon", pokemonRoutes);
+app.use("/pokemon", pokemonRoutes);           // API style routes for Pokémon
 app.use("/admin", adminRoutes);
 app.use("/auth", loginRoute);
+app.use("/admin", editUserRoutes);              // Edit users admin routes
 
-// Integrate editUser.js routes
-app.use("/admin", editUserRoutes);  // Mount your editUser routes under '/admin'
+// Important: Mount editPokemon routes to root or admin based on your URL design
+app.use("/", editPokemonRoutes);                 // Edit Pokémon routes with forms (GET /pokemon/:id/edit, POST /pokemon/:id/edit, POST /pokemon/:id/delete)
 
 // 404 handler
 app.use((req, res, next) => {

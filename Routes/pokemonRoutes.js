@@ -2,19 +2,22 @@ const express = require("express");
 const router = express.Router();
 const pokemonController = require("../controllers/pokemonController");
 
-// Get all Pokémon
+// List all Pokémon and render
 router.get("/", pokemonController.getPokemon);
 
-// Add a new Pokémon
-router.post("/", pokemonController.addPokemon);
+// Show form to add a new Pokémon
+router.get("/add", pokemonController.showAddForm);
 
-// Get a Pokémon by ID
-router.get("/:id", pokemonController.getPokemonById);
+// Handle form submission to add a new Pokémon
+router.post("/add", pokemonController.addPokemon);
 
-// Update a Pokémon by ID
-router.put("/:id", pokemonController.updatePokemon);
+// Show form to edit a Pokémon by id
+router.get("/edit/:id", pokemonController.showEditForm);
 
-// Delete a Pokémon by ID
-router.delete("/:id", pokemonController.deletePokemon);
+// Handle update of a Pokémon by id
+router.post("/edit/:id", pokemonController.updatePokemon);
+
+// Handle delete of a Pokémon by id
+router.post("/delete/:id", pokemonController.deletePokemon);
 
 module.exports = router;

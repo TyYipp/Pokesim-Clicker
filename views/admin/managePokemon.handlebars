@@ -1,7 +1,19 @@
-<h1>Manage Pokemon</h1>
+<h1>Manage Pokémon</h1>
+
+<a href="/pokemon/new">Add New Pokémon</a>
+
 <ul>
   {{#each pokemons}}
-    <li>{{this.name}} - Type: {{this.type}}</li>
+    <li>
+      {{this.name}} - Multiplier: {{this.multiplier}}
+      <br>
+      <img src="{{this.image}}" alt="{{this.name}}" width="100">
+      <form action="/pokemon/{{this._id}}/delete" method="POST" style="display:inline;">
+        <button type="submit">Delete</button>
+      </form>
+      <a href="/pokemon/{{this._id}}/edit">Edit</a>
+    </li>
   {{/each}}
 </ul>
+
 <a href="/admin">Back to Dashboard</a>

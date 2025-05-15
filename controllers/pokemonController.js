@@ -1,67 +1,76 @@
 const Pokemon = require("../models/Pokemon");
 
-// Get all Pokémon
+// Get all Pokémon and render view
 exports.getPokemon = async (req, res) => {
-  console.log("Getting all Pokémon..."); // Debugging log
+  console.log("Getting all Pokémon...");
   try {
-    const pokemon = await Pokemon.find();
-    res.json(pokemon);
+    const pokemons = await Pokemon.find();
+    res.render("admin/managePokemon", { pokemons });
   } catch (err) {
-    res.status(500).json({ error: "Unable to fetch Pokémon" });
+    res.status(500).send("Unable to fetch Pokémon: " + err.message);
   }
 };
 
-// Add a new Pokémon
+// Show form to add new Pokémon
+exports.showAddForm = (req, res) => {
+  res.render("admin/addPokemon");
+};
+
+// Handle form POST to add new Pokémon
 exports.addPokemon = async (req, res) => {
-  console.log("Adding new Pokémon..."); // Debugging log
+  console.log("Adding new Pokémon...");
   try {
     const { name, multiplier, image } = req.body;
     const newPokemon = new Pokemon({ name, multiplier, image });
     await newPokemon.save();
-    res.status(201).json(newPokemon);
+    res.redirect("/pokemon"); // Go back to the list after adding
   } catch (err) {
-    res.status(500).json({ error: "Unable to add Pokémon" });
+    res.status(500).send("Unable to add Pokémon: " + err.message);
   }
 };
 
-// Get Pokémon by ID
-exports.getPokemonById = async (req, res) => {
-  console.log("Getting Pokémon by ID..."); // Debugging log
+// Show form to edit a Pokémon
+exports.showEditForm = async (req, res) => {
   try {
     const pokemon = await Pokemon.findById(req.params.id);
     if (!pokemon) {
-      return res.status(404).json({ error: "Pokémon not found" });
+      return res.status(404).send("Pokémon not found");
     }
-    res.json(pokemon);
+    res.render("admin/editPokemon", { pokemon });
   } catch (err) {
-    res.status(500).json({ error: "Unable to fetch Pokémon by ID" });
+    res.status(500).send("Error loading edit form: " + err.message);
   }
 };
 
-// Update Pokémon by ID
+// Handle POST to update a Pokémon
 exports.updatePokemon = async (req, res) => {
-  console.log("Updating Pokémon..."); // Debugging log
+  console.log("Updating Pokémon...");
   try {
-    const pokemon = await Pokemon.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    const { name, multiplier, image } = req.body;
+    const pokemon = await Pokemon.findByIdAndUpdate(
+      req.params.id,
+      { name, multiplier, image },
+      { new: true, runValidators: true }
+    );
     if (!pokemon) {
-      return res.status(404).json({ error: "Pokémon not found" });
+      return res.status(404).send("Pokémon not found");
     }
-    res.json(pokemon);
+    res.redirect("/pokemon");
   } catch (err) {
-    res.status(500).json({ error: "Unable to update Pokémon" });
+    res.status(500).send("Unable to update Pokémon: " + err.message);
   }
 };
 
-// Delete Pokémon by ID
+// Delete Pokémon
 exports.deletePokemon = async (req, res) => {
-  console.log("Deleting Pokémon..."); // Debugging log
+  console.log("Deleting Pokémon...");
   try {
     const pokemon = await Pokemon.findByIdAndDelete(req.params.id);
     if (!pokemon) {
-      return res.status(404).json({ error: "Pokémon not found" });
+      return res.status(404).send("Pokémon not found");
     }
-    res.json({ message: "Pokémon deleted successfully" });
+    res.redirect("/pokemon");
   } catch (err) {
-    res.status(500).json({ error: "Unable to delete Pokémon" });
+    res.status(500).send("Unable to delete Pokémon: " + err.message);
   }
 };

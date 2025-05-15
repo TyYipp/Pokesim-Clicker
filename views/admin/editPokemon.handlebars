@@ -1,0 +1,10 @@
+<h1>Edit Pokémon</h1>
+
+<form action="/pokemon/{{pokemon._id}}/edit" method="POST">
+  <label>Name: <input type="text" name="name" value="{{pokemon.name}}" required></label><br>
+  <label>Multiplier: <input type="number" step="0.01" name="multiplier" value="{{pokemon.multiplier}}" required></label><br>
+  <label>Image URL: <input type="text" name="image" value="{{pokemon.image}}" required></label><br>
+  <button type="submit">Update Pokémon</button>
+</form>
+
+<a href="/pokemon">Back</a>
