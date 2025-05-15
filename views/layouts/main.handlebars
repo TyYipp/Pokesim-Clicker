@@ -20,15 +20,18 @@
       border-radius: 4px;
       margin-right: 20px; /* Space between buttons */
       cursor: pointer;
+      border: none;
+      font-size: 1rem;
     }
     .button:hover {
       background-color: #45a049;
     }
-    /* User greeting and logout container */
+    /* User greeting container */
     .user-info {
       display: inline-block;
       margin-left: 20px;
       font-weight: bold;
+      vertical-align: middle;
     }
   </style>
 </head>
@@ -39,11 +42,10 @@
   <a href="/clicker" class="button">☝️ Clicker</a>
   <a onclick="goToAdmin()" class="button">Admin</a>
 
-  <!-- User greeting and logout -->
+  <!-- User greeting without logout button -->
   {{#if user}}
     <span class="user-info">
       Hello, {{user.name}}!
-      <button class="button" onclick="logout()">Logout</button>
     </span>
   {{/if}}
 
@@ -78,6 +80,8 @@
         credentials: 'include'
       });
       if (res.ok) {
+        // Clear token from localStorage if you use it
+        localStorage.removeItem('token');
         window.location.href = '/';  // reload to update UI
       } else {
         const data = await res.json();

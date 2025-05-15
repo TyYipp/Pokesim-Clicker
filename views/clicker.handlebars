@@ -1,18 +1,25 @@
 <h1>Clicker Game</h1>
 <p>Clicks: <span id="click-count">0</span></p>
 <button id="click-button">Click me!</button>
+<!-- Add random Pokémon button -->
+<button id="add-pokemon-button">Add Random Pokémon</button>
+
+<!-- Logout button -->
+<button id="logout-button">Logout</button>
 
 <h2>Your Owned Pokémon</h2>
 <ul id="pokemon-list"></ul>
 
-<!-- Add random Pokémon button -->
-<button id="add-pokemon-button">Add Random Pokémon</button>
 
 <script>
-  const token = localStorage.getItem('token'); 
+  // Get token fresh from localStorage inside functions to avoid stale token issues
+  function getToken() {
+    return localStorage.getItem('token');
+  }
 
   // Fetch user's owned Pokémon and show name, multiplier, and image
   async function fetchOwnedPokemons() {
+    const token = getToken();
     if (!token) {
       document.getElementById('pokemon-list').innerText = 'You must be logged in to see your Pokémon.';
       return;
@@ -61,13 +68,13 @@
 
   // Add random Pokémon button logic
   document.getElementById('add-pokemon-button').addEventListener('click', async () => {
+    const token = getToken();
     if (!token) {
       alert('You must be logged in to add a Pokémon');
       return;
     }
 
     try {
-      // Call backend route to add a random Pokémon to user
       const addRes = await fetch('/users/add-random-pokemon', {
         method: 'POST',
         headers: {
@@ -84,12 +91,29 @@
       const data = await addRes.json();
       alert(`Added Pokémon: ${data.pokemon.name}`);
 
-      // Refresh user's Pokémon list
       fetchOwnedPokemons();
 
     } catch (error) {
       console.error(error);
       alert('Failed to add random Pokémon.');
     }
+  });
+
+  // Logout button logic
+  document.getElementById('logout-button').addEventListener('click', async () => {
+    // Remove token from localStorage
+    localStorage.removeItem('token');
+
+    try {
+      // Call backend logout route to clear cookie
+      await fetch('/logout', { method: 'POST', credentials: 'include' });
+    } catch (err) {
+      console.error('Logout backend error:', err);
+    }
+
+    // Clear Pokémon list and show logged out message
+    document.getElementById('pokemon-list').innerText = 'You must be logged in to see your Pokémon.';
+
+    alert('Logged out successfully');
   });
 </script>
