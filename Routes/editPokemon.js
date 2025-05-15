@@ -1,6 +1,7 @@
 const express = require('express');
 const router = express.Router();
 const Pokemon = require('../models/Pokemon');  // Adjust path if needed
+require('dotenv').config(); // Load env vars if needed
 
 // Route to display the edit Pokémon form
 router.get('/pokemon/:id/edit', async (req, res) => {
@@ -56,6 +57,20 @@ router.post('/pokemon/:id/delete', async (req, res) => {
     console.error('Error deleting Pokémon:', err);
     res.status(500).json({ error: 'Something went wrong!' });
   }
+});
+
+// New: Show Cloudinary image by public_id
+router.get('/image/:publicId', (req, res) => {
+  const { publicId } = req.params;
+
+  const cloudName = process.env.CLOUDINARY_CLOUD_NAME;
+  if (!cloudName) {
+    return res.status(500).send('Cloudinary cloud name not configured');
+  }
+
+  const imageUrl = `https://res.cloudinary.com/${cloudName}/image/upload/${publicId}.jpg`;
+
+  res.render('imageDisplay', { imageUrl });
 });
 
 module.exports = router;

@@ -8,7 +8,7 @@ const swaggerUi = require("swagger-ui-express");
 const exphbs = require("express-handlebars");
 
 const upload = require("./middleware/upload");
-const Image = require("./models/Image");
+const Image = require("./models/Image");  // Image model with uploadToCloudinary method
 const userRoutes = require("./routes/userRoutes");
 const pokemonRoutes = require("./routes/pokemonRoutes");       // Your normal pokemon API routes (get, add, delete etc.)
 const adminRoutes = require("./routes/adminRoutes");
@@ -48,17 +48,13 @@ mongoose
   .then(() => console.log("✅ MongoDB connected"))
   .catch((err) => console.log("❌ MongoDB connection error:", err));
 
-// File upload route
+// File upload route WITHOUT saving to MongoDB
 app.post("/upload", upload.single("file"), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: "No file uploaded." });
   try {
     const result = await Image.uploadToCloudinary(req.file.buffer);
-    const newImage = new Image({
-      url: result.secure_url,
-      public_id: result.public_id,
-    });
-    await newImage.save();
-    res.json({ message: "File uploaded successfully!", url: result.secure_url });
+    // Do NOT save result to MongoDB, just return the URL and public_id
+    res.json({ message: "File uploaded successfully!", url: result.secure_url, public_id: result.public_id });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }

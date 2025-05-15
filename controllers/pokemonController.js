@@ -1,4 +1,5 @@
 const Pokemon = require("../models/Pokemon");
+const cloudinary = require("../config/Cloudinary"); // your Cloudinary config import
 
 // Get all Pokémon and render view
 exports.getPokemon = async (req, res) => {
@@ -72,5 +73,22 @@ exports.deletePokemon = async (req, res) => {
     res.redirect("/pokemon");
   } catch (err) {
     res.status(500).send("Unable to delete Pokémon: " + err.message);
+  }
+};
+
+// Show Cloudinary image by public ID
+exports.showImageByPublicId = async (req, res) => {
+  try {
+    const publicId = req.params.publicId;
+    // Generate the URL using Cloudinary SDK
+    const imageUrl = cloudinary.url(publicId, {
+      width: 400,
+      height: 400,
+      crop: "fill",
+      format: "png",
+    });
+    res.render("admin/showImage", { imageUrl, publicId });
+  } catch (err) {
+    res.status(500).send("Error loading image: " + err.message);
   }
 };

@@ -20,4 +20,7 @@ router.post("/edit/:id", pokemonController.updatePokemon);
 // Handle delete of a Pokémon by id
 router.post("/delete/:id", pokemonController.deletePokemon);
 
+// ✅ Show a Cloudinary image by public_id
+router.get("/image/:publicId", pokemonController.showImageByPublicId);
+
 module.exports = router;
