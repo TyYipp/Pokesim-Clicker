@@ -2,13 +2,87 @@
 <p>Clicks: <span id="click-count">0</span></p>
 <button id="click-button">Click me!</button>
 
+<h2>Your Owned Pokémon</h2>
+<ul id="pokemon-list"></ul>
+
+<!-- Add random Pokémon button -->
+<button id="add-pokemon-button">Add Random Pokémon</button>
+
 <script>
+  const token = localStorage.getItem('token'); 
+
+  // Fetch user's owned Pokémon
+  async function fetchOwnedPokemons() {
+    if (!token) {
+      document.getElementById('pokemon-list').innerText = 'You must be logged in to see your Pokémon.';
+      return;
+    }
+    try {
+      const res = await fetch('/users/me', {
+        headers: {
+          'Authorization': 'Bearer ' + token
+        }
+      });
+      if (!res.ok) {
+        throw new Error('Failed to fetch Pokémon');
+      }
+      const user = await res.json();
+      const listEl = document.getElementById('pokemon-list');
+      listEl.innerHTML = '';
+
+      user.ownedPokemons.forEach(pokemon => {
+        const li = document.createElement('li');
+        li.textContent = pokemon.name;
+        listEl.appendChild(li);
+      });
+    } catch (error) {
+      console.error(error);
+      document.getElementById('pokemon-list').innerText = 'Error loading Pokémon.';
+    }
+  }
+
+  fetchOwnedPokemons();
+
+  // Clicker logic
   let count = 0;
   const button = document.getElementById('click-button');
   const display = document.getElementById('click-count');
-
   button.addEventListener('click', () => {
     count++;
     display.textContent = count;
+  });
+
+  // Add random Pokémon button logic
+  document.getElementById('add-pokemon-button').addEventListener('click', async () => {
+    if (!token) {
+      alert('You must be logged in to add a Pokémon');
+      return;
+    }
+
+    try {
+      // Call backend route to add a random Pokémon to user
+      const addRes = await fetch('/users/add-random-pokemon', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + token
+        }
+      });
+
+      if (!addRes.ok) {
+        const err = await addRes.json();
+        alert('Error: ' + err.message);
+        return;
+      }
+
+      const data = await addRes.json();
+      alert(`Added Pokémon: ${data.pokemon.name}`);
+
+      // Refresh user's Pokémon list
+      fetchOwnedPokemons();
+
+    } catch (error) {
+      console.error(error);
+      alert('Failed to add random Pokémon.');
+    }
   });
 </script>

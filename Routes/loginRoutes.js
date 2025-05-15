@@ -24,14 +24,17 @@ router.post('/login', async (req, res) => {
       { expiresIn: '1h' }
     );
 
+    // Set token as HttpOnly cookie
     res.cookie('token', token, {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       maxAge: 3600000, // 1 hour
     });
 
+    // Send token also in JSON response for frontend usage
     res.json({
       message: 'Login successful',
+      token,
       user: { name: user.name, email: user.email, role: user.role },
     });
   } catch (error) {

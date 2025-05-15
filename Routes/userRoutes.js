@@ -3,6 +3,8 @@ const router = express.Router();
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 const dotenv = require('dotenv');
+const userController = require('../controllers/userController');
+const { isAuthenticated } = require('../middleware/auth'); // ✅ fixed name
 dotenv.config();
 
 // Register Route
@@ -24,9 +26,9 @@ router.post('/register', async (req, res) => {
     user = new User({
       name,
       email,
-      password,  // raw password here; hash handled by pre-save hook
+      password,  // raw password here; hash handled by pre-save hook in User model
       slug,
-      role: 'user' // default role, adjust if needed
+      role: 'user' // default role
     });
 
     await user.save();
@@ -47,5 +49,14 @@ router.post('/register', async (req, res) => {
     res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
+
+// Login Route
+router.post('/login', userController.loginUser);
+
+// ✅ Use isAuthenticated middleware from auth.js
+router.post('/add-pokemon', isAuthenticated, userController.addPokemonToUser);
+router.get('/me', isAuthenticated, userController.getUserWithPokemons);
+router.post('/remove-pokemon', isAuthenticated, userController.removePokemonFromUser);
+router.post('/add-random-pokemon', isAuthenticated, userController.addRandomPokemonToUser);
 
 module.exports = router;

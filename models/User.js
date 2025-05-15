@@ -27,6 +27,12 @@ const userSchema = new mongoose.Schema(
       required: true,
       unique: true,
     },
+    ownedPokemons: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Pokemon',
+      },
+    ],
   },
   { timestamps: true }
 );

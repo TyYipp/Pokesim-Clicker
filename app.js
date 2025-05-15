@@ -8,13 +8,13 @@ const swaggerUi = require("swagger-ui-express");
 const exphbs = require("express-handlebars");
 
 const upload = require("./middleware/upload");
-const Image = require("./models/Image");  // Image model with uploadToCloudinary method
+const Image = require("./models/Image");
 const userRoutes = require("./routes/userRoutes");
-const pokemonRoutes = require("./routes/pokemonRoutes");       // Your normal pokemon API routes (get, add, delete etc.)
+const pokemonRoutes = require("./routes/pokemonRoutes");
 const adminRoutes = require("./routes/adminRoutes");
 const loginRoute = require("./routes/loginRoutes");
-const editUserRoutes = require("./routes/editUser");            // Edit User routes
-const editPokemonRoutes = require("./routes/editPokemon");      // Edit Pokemon routes (GET edit form, POST update, POST delete)
+const editUserRoutes = require("./routes/editUser");
+const editPokemonRoutes = require("./routes/editPokemon");
 
 dotenv.config();
 
@@ -53,14 +53,13 @@ app.post("/upload", upload.single("file"), async (req, res) => {
   if (!req.file) return res.status(400).json({ error: "No file uploaded." });
   try {
     const result = await Image.uploadToCloudinary(req.file.buffer);
-    // Do NOT save result to MongoDB, just return the URL and public_id
     res.json({ message: "File uploaded successfully!", url: result.secure_url, public_id: result.public_id });
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
 });
 
-// Handlebars setup with prototype access enabled
+// Handlebars setup
 app.engine(
   "handlebars",
   exphbs.engine({
@@ -77,17 +76,15 @@ app.set("views", "./views");
 app.get("/", (req, res) => res.render("home"));
 app.get("/register", (req, res) => res.render("register"));
 app.get("/login", (req, res) => res.render("login"));
-app.get("/clicker", (req, res) => res.render("clicker"));
+app.get("/clicker", (req, res) => res.render("clicker")); // <-- Added clicker route here
 
 // Routes
 app.use("/users", userRoutes);
-app.use("/pokemon", pokemonRoutes);           // API style routes for Pokémon
+app.use("/pokemon", pokemonRoutes);
 app.use("/admin", adminRoutes);
 app.use("/auth", loginRoute);
-app.use("/admin", editUserRoutes);              // Edit users admin routes
-
-// Important: Mount editPokemon routes to root or admin based on your URL design
-app.use("/", editPokemonRoutes);                 // Edit Pokémon routes with forms (GET /pokemon/:id/edit, POST /pokemon/:id/edit, POST /pokemon/:id/delete)
+app.use("/admin", editUserRoutes);
+app.use("/", editPokemonRoutes);
 
 // 404 handler
 app.use((req, res, next) => {
