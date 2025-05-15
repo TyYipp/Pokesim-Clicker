@@ -1,24 +1,7 @@
-<h1>Manage Pokémon</h1>
-<table>
-  <thead>
-    <tr>
-      <th>Name</th>
-      <th>Multiplier</th>
-      <th>Image</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody>
-    {{#each pokemons}}
-      <tr>
-        <td>{{this.name}}</td>
-        <td>{{this.multiplier}}</td>
-        <td><img src="{{this.image}}" alt="{{this.name}}" width="100"></td>
-        <td>
-          <a href="/admin/pokemon/edit/{{this._id}}">Edit</a>
-          <a href="/admin/pokemon/delete/{{this._id}}">Delete</a>
-        </td>
-      </tr>
-    {{/each}}
-  </tbody>
-</table>
+<h1>Manage Pokemon</h1>
+<ul>
+  {{#each pokemons}}
+    <li>{{this.name}} - Type: {{this.type}}</li>
+  {{/each}}
+</ul>
+<a href="/admin">Back to Dashboard</a>

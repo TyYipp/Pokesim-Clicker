@@ -1,15 +1,19 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
-const { isAuthenticated, isAdmin } = require("../middleware/auth");
-const adminController = require("../controllers/adminController");
+const { isAuthenticated, isAdmin } = require('../middleware/auth');
+const adminController = require('../controllers/adminController');
 
-// Admin dashboard route
-router.get("/", isAuthenticated, isAdmin, adminController.dashboard);
+// Apply auth middlewares to all admin routes
+router.use(isAuthenticated);
+router.use(isAdmin);
 
-// Admin route to manage users
-router.get("/users", isAuthenticated, isAdmin, adminController.manageUsers);
+// Admin dashboard
+router.get('/', adminController.dashboard);
 
-// Admin route to manage Pokémon
-router.get("/pokemon", isAuthenticated, isAdmin, adminController.managePokemon);
+// Manage users
+router.get('/users', adminController.manageUsers);
+
+// Manage Pokemon
+router.get('/pokemon', adminController.managePokemon);
 
 module.exports = router;

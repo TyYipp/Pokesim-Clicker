@@ -1,0 +1,14 @@
+<h1>Clicker Game</h1>
+<p>Clicks: <span id="click-count">0</span></p>
+<button id="click-button">Click me!</button>
+
+<script>
+  let count = 0;
+  const button = document.getElementById('click-button');
+  const display = document.getElementById('click-count');
+
+  button.addEventListener('click', () => {
+    count++;
+    display.textContent = count;
+  });
+</script>

@@ -3,6 +3,7 @@ const express = require("express");
 const mongoose = require("mongoose");
 const dotenv = require("dotenv");
 const cors = require("cors");
+const cookieParser = require("cookie-parser");  // <--- add this
 const swaggerJsDoc = require("swagger-jsdoc");
 const swaggerUi = require("swagger-ui-express");
 const exphbs = require("express-handlebars");
@@ -12,7 +13,8 @@ const upload = require("./middleware/upload");
 const Image = require("./models/Image");
 const userRoutes = require("./routes/userRoutes");
 const pokemonRoutes = require("./routes/pokemonRoutes");
-const adminRoutes = require("./routes/adminRoutes"); // Import admin routes
+const adminRoutes = require("./routes/adminRoutes");
+const loginRoute = require("./routes/loginRoutes");
 
 // 📦 Load environment variables
 dotenv.config();
@@ -43,7 +45,9 @@ app.use("/api-docs", swaggerUi.serve, swaggerUi.setup(swaggerDocs));
 
 // 🛡️ Middleware
 app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
 app.use(cors());
+app.use(cookieParser());  // <--- add this to parse cookies
 
 // 🔗 Connect to MongoDB
 mongoose
@@ -58,7 +62,6 @@ app.post("/upload", upload.single("file"), async (req, res) => {
   }
 
   try {
-    // Placeholder for Image.uploadToCloudinary, ensure you have this method in your Image model
     const result = await Image.uploadToCloudinary(req.file.buffer);
 
     const newImage = new Image({
@@ -76,44 +79,52 @@ app.post("/upload", upload.single("file"), async (req, res) => {
   }
 });
 
-// 🎨 Render register view
+// 🎨 View engine setup for Handlebars
+app.engine(
+  "handlebars",
+  exphbs.engine({
+    defaultLayout: "main",
+  })
+);
+app.set("view engine", "handlebars");
+app.set("views", "./views");
+
+// 🎨 Render main views
+app.get("/", (req, res) => {
+  res.render("home");
+});
 app.get("/register", (req, res) => {
-  res.render("register"); // Render register.handlebars
+  res.render("register");
+});
+app.get("/login", (req, res) => {
+  res.render("login");
+});
+app.get("/clicker", (req, res) => {
+  res.render("clicker");
 });
 
 // ✅ Routes
 app.use("/users", userRoutes);
 app.use("/pokemon", pokemonRoutes);
-app.use("/admin", adminRoutes); // Register the admin routes
+app.use("/admin", adminRoutes);
+app.use("/auth", loginRoute);
 
-// 🎨 View engine setup for Handlebars
-app.engine("handlebars", exphbs.engine({
-  defaultLayout: 'main', // Use the 'main' layout by default
-}));
-app.set("view engine", "handlebars");
-app.set("views", "./views");
-
-// 🍓 Sample Handlebars route (For login)
-app.get("/", (req, res) => {
-  res.render("login");
-});
-
-// 🚀 New test route
-app.get('/test', (req, res) => {
-  res.render('test'); // Render the test.handlebars view
+// 404 Handler for unknown routes
+app.use((req, res, next) => {
+  res.status(404).json({ error: "Route not found" });
 });
 
 // 🌍 Global error handling middleware (catch all errors)
 app.use((err, req, res, next) => {
   console.error(err.stack);
-  res.status(500).json({ error: 'Something went wrong!' });
+  res.status(500).json({ error: "Something went wrong!" });
 });
 
 // 🚀 Start server
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`http://localhost:3000`);
+  console.log(`http://localhost:${PORT}`);
 });
 
-module.exports = app; // Export app for testing
+module.exports = app;
