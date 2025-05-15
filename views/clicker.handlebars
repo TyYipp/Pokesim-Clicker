@@ -11,7 +11,7 @@
 <script>
   const token = localStorage.getItem('token'); 
 
-  // Fetch user's owned Pokémon
+  // Fetch user's owned Pokémon and show name, multiplier, and image
   async function fetchOwnedPokemons() {
     if (!token) {
       document.getElementById('pokemon-list').innerText = 'You must be logged in to see your Pokémon.';
@@ -32,7 +32,14 @@
 
       user.ownedPokemons.forEach(pokemon => {
         const li = document.createElement('li');
-        li.textContent = pokemon.name;
+        li.style.marginBottom = '12px';
+
+        li.innerHTML = `
+          <strong>${pokemon.name}</strong> <br>
+          Multiplier: ${pokemon.multiplier ?? 'N/A'} <br>
+          <img src="${pokemon.image || pokemon.img || ''}" alt="${pokemon.name}" style="width: 80px; height: 80px; object-fit: contain; margin-top: 5px;">
+        `;
+
         listEl.appendChild(li);
       });
     } catch (error) {
